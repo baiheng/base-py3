@@ -6,26 +6,39 @@ import importlib
 
 from sanic import Sanic
 
+from conf import settings
+
 
 app = Sanic(__name__)
 
 def dispatch(handler):
-    def _dispatch():
+    def _dispatch(request, *args, **kwargs):
         obj = handler()
         return obj.dispatch()
     return _dispatch
 
 for i in os.listdir("./src/"):
-    view_path = "./src/%s/views/" % i
-    for j in os.walk(view_path):
+    if i.startswith("__"):
+        continue
+    module_path = f"./src/{i}/"
+    if not os.path.isdir(module_path):
+        continue
+    view_path = f"{module_path}views/"
+    for j in os.listdir(view_path):
+        if j.startswith("__") or j.endswith("pyc"):
+            continue
+        f = j[:-3]
+        view = importlib.import_module(f"src.{i}.views.{f}")
+        view_class = None
+        for c in dir(view):
+            if c.endswith("View"):
+                view_class = c
+                break
+        if view_class is None:
+            continue
+        handler = getattr(view, view_class)
+        app.add_route(dispatch(handler), f"{settings.URL_PREFIX}/{i}/{f}")
 
-
-for i in modules:
-    # 获取导入模块属性名称  导入异常赋给一个默认值 'attribute'
-    for j in getattr(importlib.import_module('%s' % i), 'attribute'):
-        # 给views属性，注册到蓝图
-        bp = getattr(importlib.import_module('%s.views.%s_view' % (i, j)), j)
-        app.register_blueprint(bp, url_prefix="/pluginserver/ops/%s" % i)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8189, debug=True)
+    app.run(host='0.0.0.0', port=8289, debug=True)
