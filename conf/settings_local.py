@@ -7,11 +7,11 @@ from .settings_production import BaseConfig
 class LocalConfig(BaseConfig):
     DEBUG = True
 
-    MYSQL_HOST = "192.168.13.39"
+    MYSQL_HOST = "**"
     MYSQL_PORT = "3306"
-    MYSQL_USER = "jpush"
-    MYSQL_PWD = "jpush"
-    MYSQL_DB = "devops"
+    MYSQL_USER = "**"
+    MYSQL_PWD = "**"
+    MYSQL_DB = "**"
 
     # token
     # 7天有效期
